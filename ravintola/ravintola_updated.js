@@ -4,20 +4,32 @@ OHJELMAKOODI
 */
 
 const Ravintola = function () {
-  this.alkuruoat = ['Tomaattikeitto', 'Leipä', 'Vihersalaatti', 'Salsa'];
-  this.paaruoat = [
-    'Kalakeitto',
-    'Makaroonilaatikko',
-    'Kasvispihvi',
-    'Kanasalaatti',
+  this.alkuruoat = [
+    { ruoka: 'Tomaattikeitto', hinta: 5 },
+    { ruoka: 'Leipä', hinta: 2 },
+    { ruoka: 'Vihersalaatti', hinta: 4 },
+    { ruoka: 'Salsa', hinta: 3 },
   ];
-  this.jalkiruoat = ['Hedelmäsalaatti', 'Jäätelö', 'Pulla', 'Donitsi'];
-  this.juomat = ['Tee', 'Kahvi', 'Maito', 'Mehu'];
-  this.alkuruokaHinta = 4;
-  this.paaruokaHinta = 6;
-  this.jalkiruokaHinta = 4;
-  this.juomaHinta = 3;
+  this.paaruoat = [
+    { ruoka: 'Kalakeitto', hinta: 8 },
+    { ruoka: 'Makaroonilaatikko', hinta: 6 },
+    { ruoka: 'Kasvispihvi', hinta: 7 },
+    { ruoka: 'Kanasalaatti', hinta: 9 },
+  ];
+  this.jalkiruoat = [
+    { ruoka: 'Hedelmäsalaatti', hinta: 4 },
+    { ruoka: 'Jäätelö', hinta: 3 },
+    { ruoka: 'Pulla', hinta: 2 },
+    { ruoka: 'Donitsi', hinta: 3 },
+  ];
+  this.juomat = [
+    { ruoka: 'Tee', hinta: 2 },
+    { ruoka: 'Kahvi', hinta: 2 },
+    { ruoka: 'Maito', hinta: 1 },
+    { ruoka: 'Mehu', hinta: 3 },
+  ];
   this.paikkojenMaara = 15;
+  this.paikat; // TÃ¤hÃ¤n muuttujaan paikkojen taulukko
 };
 
 /**
@@ -42,6 +54,9 @@ Ravintola.prototype.syoRavintolassa = function (asiakkaidenMaara) {
   if (!onTilaa) {
     return;
   }
+
+  this.varaaPaikat(asiakkaidenMaara);
+
   const tilaukset = [];
 
   for (let i = 0; i < asiakkaidenMaara; i++) {
@@ -94,6 +109,45 @@ Ravintola.prototype.tarkistaPaikkojenMaara = function (asiakkaidenMaara) {
 };
 
 /**
+ * Luo Ravintolan paikat-muuttujaan uuden taulukon, jonka koko mÃ¤Ã¤rÃ¤ytyy paikkojenMaara-muuttujan mukaisesti,
+ * ja tÃ¤yttÃ¤Ã¤ taulukon boolean arvolla false.
+ */
+Ravintola.prototype.generoiPaikat = function () {
+  this.paikat = new Array(this.paikkojenMaara).fill(false);
+};
+
+/**
+ * Generoi taulun jos sellaista ei jo ole, tarkistaa montako vapaata paikkaa ravintolassa on
+ * Palauttaa falsen, jos ravintola on jo bookattu täyteen. Varaa sovitun määrän paikkoja täyttämällä taulukon arvolla true
+ *  jos niitä jäljellä ja sitten palauttaa true
+ */
+Ravintola.prototype.varaaPaikat = function (varauksenMaara = 1) {
+  if (!Array.isArray(this.paikat)) {
+    this.generoiPaikat();
+  }
+
+  let vapaatPaikat = 0;
+  for (let i = 0; i < this.paikat.length; i++) {
+    if (this.paikat[i] === false) {
+      vapaatPaikat++;
+    }
+  }
+
+  if (vapaatPaikat < varauksenMaara) {
+    throw new Error('Ei tarpeeksi paikkoja');
+  }
+
+  let varattu = 0;
+  for (let i = 0; i < this.paikat.length && varattu < varauksenMaara; i++) {
+    if (this.paikat[i] === false) {
+      this.paikat[i] = true;
+      varattu++;
+    }
+  }
+  return true;
+};
+
+/**
  * Ottaa parametreina 3 boolean arvoa, joiden avulla mÃ¤Ã¤ritellÃ¤Ã¤n mitÃ¤ ruokia asiakas tilaa.
  * Jos parametrit eivÃ¤t ole tyyppiÃ¤ boolean, heitetÃ¤Ã¤n TypeError.
  *
@@ -122,84 +176,57 @@ Ravintola.prototype.tilaaAteria = function (
   }
 
   const ruoat = [];
-  let ruoka;
+  let ruokaObjekti;
 
   if (ottaaAlkuruoan) {
-    ruoka = this.palautaTaulukonSatunnainenArvo(this.alkuruoat);
-    console.log('Ottaisin alkuruoaksi: ' + ruoka);
-    ruoat.push(ruoka);
+    ruokaObjekti = this.palautaTaulukonSatunnainenArvo(this.alkuruoat);
+    console.log('Ottaisin alkuruoaksi: ' + ruokaObjekti.ruoka);
+    ruoat.push(ruokaObjekti);
   }
 
-  ruoka = this.palautaTaulukonSatunnainenArvo(this.paaruoat);
-  console.log('Ottaisin pÃ¤Ã¤ruoaksi: ' + ruoka);
-  ruoat.push(ruoka);
+  ruokaObjekti = this.palautaTaulukonSatunnainenArvo(this.paaruoat);
+  console.log('Ottaisin pääruoaksi: ' + ruokaObjekti.ruoka);
+  ruoat.push(ruokaObjekti);
 
   if (ottaaJalkiruoan) {
-    ruoka = this.palautaTaulukonSatunnainenArvo(this.jalkiruoat);
-    console.log('Ottaisin jÃ¤lkiruoaksi: ' + ruoka);
-    ruoat.push(ruoka);
+    ruokaObjekti = this.palautaTaulukonSatunnainenArvo(this.jalkiruoat);
+    console.log('Ottaisin jälkiruoaksi: ' + ruokaObjekti.ruoka);
+    ruoat.push(ruokaObjekti);
   }
 
   if (ottaaJuoman) {
-    ruoka = this.palautaTaulukonSatunnainenArvo(this.juomat);
-    console.log('Ottaisin juomaksi: ' + ruoka);
-    ruoat.push(ruoka);
+    ruokaObjekti = this.palautaTaulukonSatunnainenArvo(this.juomat);
+    console.log('Ottaisin juomaksi: ' + ruokaObjekti.ruoka);
+    ruoat.push(ruokaObjekti);
   }
 
-  const summa = this.laskeLasku(ottaaAlkuruoan, ottaaJalkiruoan, ottaaJuoman);
+  const summa = this.laskeLasku(ruoat);
 
   return { summa, ruoat };
 };
 
 /**
  * Palauttaa satunnaisen arvon annetusta taulukosta
- * @param {string[]} taulukko
- * @return {string}
+ * @param {object[]} taulukko - Taulukossa ruokia
+ * @return {object} - Palauttaa randomin ruokaobjektin ruoalla ja hinnalla
  */
 Ravintola.prototype.palautaTaulukonSatunnainenArvo = function (taulukko) {
   return taulukko[Math.floor(Math.random() * taulukko.length)];
 };
 
 /**
- * Laskee summan annettujen boolean parametrien mukaisesti.
- * Jos parametrit eivÃ¤t ole tyyppiÃ¤ boolean, heittÃ¤Ã¤ TypeErrorin.
- *
- * 'loppuSumma' muuttujaan lisÃ¤tÃ¤Ã¤n automaattisesti 'paaruokaHinta', ja loput hinnat sitten parametrien mukaisesti.
+ * Laskee summan ruoat-tauluko objektien hinnoista
  *
  * Palauttaa lopussa 'loppuSumma'.
  *
- * @param {boolean} ottiAlkuruoan
- * @param {boolean} ottiJalkiruoan
- * @param {boolean} ottiJuoman
+ * @param {object[]} ruoat - Taulukossa ruokaobjekteja hinta-arvolla
  * @return {number}
  */
-Ravintola.prototype.laskeLasku = function (
-  ottiAlkuruoan,
-  ottiJalkiruoan,
-  ottiJuoman
-) {
-  if (
-    typeof ottiAlkuruoan !== 'boolean' ||
-    typeof ottiJalkiruoan !== 'boolean' ||
-    typeof ottiJuoman !== 'boolean'
-  ) {
-    throw new TypeError();
-  }
-
+Ravintola.prototype.laskeLasku = function (ruoat) {
   let loppuSumma = 0;
 
-  loppuSumma += this.paaruokaHinta;
-
-  if (ottiAlkuruoan) {
-    loppuSumma += this.alkuruokaHinta;
-  }
-
-  if (ottiJalkiruoan) {
-    loppuSumma += this.jalkiruokaHinta;
-  }
-
-  if (ottiJuoman) {
-    loppuSumma += this.juomaHinta;
+  for (let i = 0; i < ruoat.length; i++) {
+    loppuSumma += ruoat[i].hinta;
   }
 
   return loppuSumma;
